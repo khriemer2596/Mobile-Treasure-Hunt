@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Mobile Treasure Hunt</string>
+    <string name="back_button">Back</string>
 </resources>
