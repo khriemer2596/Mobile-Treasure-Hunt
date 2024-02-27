@@ -27,11 +27,32 @@ class HuntViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(clueSolved = clueSolvedNum)
         }
+        if (clueSolvedNum == 1) {
+            updateHuntCompleted()
+        }
     }
 
-    fun updateHint(hintNum: Int) {
+    private fun updateHuntCompleted() {
         _uiState.update { currentState ->
-            currentState.copy(hint = hintNum)
+            currentState.copy(huntCompleted = 1)
+        }
+    }
+
+    fun resetHunt() {
+        _uiState.update { currentState ->
+            currentState.copy(huntCompleted = 0)
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(clue = 0)
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(start = 0)
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(clueSolved = 0)
         }
     }
 }

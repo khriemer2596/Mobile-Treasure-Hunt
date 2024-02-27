@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Mobile Treasure Hunt</string>
     <string name="back_button">Back</string>
+    <string name="clue_solved">Clue Solved</string>
+    <string name="treasure_hunt_completed">Treasure Hunt Completed</string>
+    <string name="clue">Clue</string>
+    <string name="treasure_hunt_start">Treasure Hunt Start</string>
 </resources>

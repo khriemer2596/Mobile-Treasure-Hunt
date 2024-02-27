@@ -25,12 +25,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.compose.MobileTreasureHuntTheme
 import com.example.mobiletreasurehunt.model.HuntUiState
 import com.example.mobiletreasurehunt.ui.ClueScreen
 import com.example.mobiletreasurehunt.ui.ClueSolvedScreen
 import com.example.mobiletreasurehunt.ui.CompletedScreen
 import com.example.mobiletreasurehunt.ui.HuntViewModel
-import com.example.mobiletreasurehunt.ui.theme.MobileTreasureHuntTheme
+import com.example.mobiletreasurehunt.ui.StartScreen
 
 enum class HuntScreen(var title: String) {
     Start(title = "Treasure Hunt Start"),
@@ -49,18 +50,22 @@ fun TreasureHuntAppBar(
 ) {
     if (uiState.clue != 0) {
         if (uiState.clueSolved == 1) {
-            currentScreen.title = HuntScreen.ClueSolved.title
+            currentScreen.title = stringResource(R.string.clue)
         }
-        else {currentScreen.title = HuntScreen.CompletePage.title
+        else {currentScreen.title = stringResource(R.string.treasure_hunt_completed)
         }
 
+    }
+
+    else if (uiState.clueSolved == 1) {
+        currentScreen.title = stringResource(R.string.clue_solved)
     }
 
     else if (uiState.start == 1) {
-        currentScreen.title = HuntScreen.Clue.title
+        currentScreen.title = stringResource(R.string.clue)
     }
 
-    else {currentScreen.title = HuntScreen.Start.title
+    else {currentScreen.title = stringResource(R.string.treasure_hunt_start)
     }
 
     TopAppBar(
@@ -91,7 +96,7 @@ fun TreasureHuntApp(
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = HuntScreen.valueOf(
-        backStackEntry?.destination?.route ?: HuntScreen.Start.title
+        backStackEntry?.destination?.route ?: HuntScreen.Start.name
     )
     val uiState by viewModel.uiState.collectAsState()
 
@@ -100,7 +105,9 @@ fun TreasureHuntApp(
             TreasureHuntAppBar(
                 uiState = uiState,
                 currentScreen = currentScreen,
-                canNavigateBack = navController.previousBackStackEntry != null,
+                canNavigateBack =
+                    navController.previousBackStackEntry != null &&
+                            currentScreen.title != stringResource(id = R.string.treasure_hunt_start),
                 navigateUp = {
                     if (uiState.clueSolved == 2) {
                         viewModel.updateClueSolved(1)
@@ -129,53 +136,58 @@ fun TreasureHuntApp(
 
         NavHost(
             navController = navController,
-            startDestination = HuntScreen.Start.title,
+            startDestination = HuntScreen.Start.name,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(route = HuntScreen.Start.title) {
+            composable(route = HuntScreen.Start.name) {
                 StartScreen(
                     onButtonClicked = {
                         viewModel.updateStart(it)
-                        navController.navigate(HuntScreen.Clue.title)
+                        navController.navigate(HuntScreen.Clue.name)
                     },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(dimensionResource(R.dimen.padding_medium))
                 )
             }
-            composable(route = HuntScreen.Clue.title) {
+            composable(route = HuntScreen.Clue.name) {
                 ClueScreen(
                     clueRef = uiState.clue,
-                    onButtonClicked = {
-                        viewModel.updateClue(it)
-                        if (uiState.clue == 2) {
-                            navController.navigate(HuntScreen.CompletePage.title)
+                    onFoundItButtonClicked = {
+                        viewModel.updateClueSolved(it + 1)
+                        if (uiState.huntCompleted == 1) {
+                            navController.navigate(HuntScreen.CompletePage.name)
                         }
                         else {
-                            navController.navigate(HuntScreen.ClueSolved.title)
+                            navController.navigate(HuntScreen.ClueSolved.name)
                         }
-
+                    },
+                    onQuitButtonClicked = {
+                        viewModel.resetHunt()
+                        navController.navigate(HuntScreen.Start.name)
                     },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(dimensionResource(R.dimen.padding_medium))
                 )
             }
-            composable(route = HuntScreen.ClueSolved.title) {
+            composable(route = HuntScreen.ClueSolved.name) {
                 ClueSolvedScreen(
                     clueRef = uiState.clue,
                     onButtonClicked = {
-                        navController.navigate(HuntScreen.Clue.title)
+                        viewModel.updateClue(it)
+                        navController.navigate(HuntScreen.Clue.name)
                     },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(dimensionResource(R.dimen.padding_medium))
                 )
             }
-            composable(route = HuntScreen.CompletePage.title) {
+            composable(route = HuntScreen.CompletePage.name) {
                 CompletedScreen(
                     onButtonClicked = {
-                        navController.navigate(HuntScreen.Start.title)
+                        viewModel.resetHunt()
+                        navController.navigate(HuntScreen.Start.name)
                     },
                     modifier = Modifier
                         .fillMaxSize()
@@ -183,13 +195,5 @@ fun TreasureHuntApp(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TreasureHuntScreenPreview() {
-    MobileTreasureHuntTheme {
-        TreasureHuntApp()
     }
 }
