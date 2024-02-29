@@ -19,10 +19,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.mobiletreasurehunt.R
 import com.example.mobiletreasurehunt.data.DataSource
-import kotlin.math.exp
 
 @Composable
 fun ClueScreen(
@@ -38,7 +38,7 @@ fun ClueScreen(
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(DataSource.clues[clueRef])
+            Text(stringResource(DataSource.clues[clueRef]))
         }
         Column(
             modifier = Modifier
@@ -78,13 +78,13 @@ fun Hint(
     ) {
         Column {
             Text(
-                "Hint",
+                stringResource(R.string.hint),
                 //style =
                 modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
             )
             if (expanded) {
                 Text(
-                    text = DataSource.hints[clueRef]
+                    text = stringResource(DataSource.hints[clueRef])
                 )
             }
         }
@@ -100,7 +100,7 @@ fun FoundItButton(
         onClick = onClick,
         modifier = modifier.widthIn(min = 250.dp)
     ) {
-        Text("Found It!")
+        Text(stringResource(R.string.found_it))
     }
 }
 
@@ -113,6 +113,6 @@ fun QuitButton(
         onClick = onClick,
         modifier = modifier.widthIn(min = 250.dp)
     ) {
-        Text("Quit")
+        Text(stringResource(R.string.quit))
     }
 }

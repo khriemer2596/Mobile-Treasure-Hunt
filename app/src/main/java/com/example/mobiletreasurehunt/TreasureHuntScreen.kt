@@ -1,24 +1,40 @@
 package com.example.mobiletreasurehunt
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Location
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,18 +42,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.compose.MobileTreasureHuntTheme
+import com.example.mobiletreasurehunt.data.DataSource
 import com.example.mobiletreasurehunt.model.HuntUiState
 import com.example.mobiletreasurehunt.ui.ClueScreen
 import com.example.mobiletreasurehunt.ui.ClueSolvedScreen
 import com.example.mobiletreasurehunt.ui.CompletedScreen
 import com.example.mobiletreasurehunt.ui.HuntViewModel
 import com.example.mobiletreasurehunt.ui.StartScreen
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.OnSuccessListener
+import kotlinx.coroutines.delay
 
 enum class HuntScreen(var title: String) {
-    Start(title = "Treasure Hunt Start"),
-    Clue(title = "Clues"),
-    ClueSolved(title = "Clue Solved"),
-    CompletePage(title = "Treasure Hunt Completed")
+    Start(title = R.string.treasure_hunt_start_page_title.toString()),
+    Clue(title = R.string.clues.toString()),
+    ClueSolved(title = R.string.clue_solved_title.toString()),
+    CompletePage(title = R.string.treasure_hunt_completed_title.toString())
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +69,7 @@ fun TreasureHuntAppBar(
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (uiState.clue != 0) {
+    if (uiState.clue != 0) { // Case where a clue has been solved
         if (uiState.clueSolved == 1) {
             currentScreen.title = stringResource(R.string.clue)
         }
@@ -57,15 +78,16 @@ fun TreasureHuntAppBar(
 
     }
 
-    else if (uiState.clueSolved == 1) {
+    else if (uiState.clueSolved == 1) { // Clue #1 has been solved
         currentScreen.title = stringResource(R.string.clue_solved)
     }
 
-    else if (uiState.start == 1) {
+    else if (uiState.start == 1) { // User has started the treasure hunt
         currentScreen.title = stringResource(R.string.clue)
     }
 
-    else {currentScreen.title = stringResource(R.string.treasure_hunt_start)
+    else {
+        currentScreen.title = stringResource(R.string.treasure_hunt_start)
     }
 
     TopAppBar(
@@ -89,6 +111,7 @@ fun TreasureHuntAppBar(
     )
 }
 
+@SuppressLint("MissingPermission")
 @Composable
 fun TreasureHuntApp(
     viewModel: HuntViewModel = viewModel(),
@@ -98,7 +121,25 @@ fun TreasureHuntApp(
     val currentScreen = HuntScreen.valueOf(
         backStackEntry?.destination?.route ?: HuntScreen.Start.name
     )
+
     val uiState by viewModel.uiState.collectAsState()
+    var isTiming by remember { mutableStateOf(false) } // State variable for timer
+    var isReset by remember { mutableStateOf(false) } // State variable for resetting timer
+
+    if (uiState.clueSolved > 0) { // Update location
+        val fusedLocationClient : FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(
+            LocalContext.current)
+        fusedLocationClient.lastLocation.addOnSuccessListener(
+            MainActivity(), OnSuccessListener { location: Location? ->
+                if (location != null) {
+                    val lat = location.latitude
+                    val long = location.longitude
+                    viewModel.updateLat(lat)
+                    viewModel.updateLong(long)
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -108,7 +149,7 @@ fun TreasureHuntApp(
                 canNavigateBack =
                     navController.previousBackStackEntry != null &&
                             currentScreen.title != stringResource(id = R.string.treasure_hunt_start),
-                navigateUp = {
+                navigateUp = { // Do not want back arrow available on Start page
                     if (uiState.clueSolved == 2) {
                         viewModel.updateClueSolved(1)
                         navController.navigateUp()
@@ -143,6 +184,8 @@ fun TreasureHuntApp(
                 StartScreen(
                     onButtonClicked = {
                         viewModel.updateStart(it)
+                        isTiming = true // Start timer
+                        isReset = false // Timer not reset
                         navController.navigate(HuntScreen.Clue.name)
                     },
                     modifier = Modifier
@@ -151,19 +194,35 @@ fun TreasureHuntApp(
                 )
             }
             composable(route = HuntScreen.Clue.name) {
+                val showPopUp = remember { mutableStateOf(false) }
+                ClueNotFound(showPopUp = showPopUp)
                 ClueScreen(
                     clueRef = uiState.clue,
                     onFoundItButtonClicked = {
-                        viewModel.updateClueSolved(it + 1)
-                        if (uiState.huntCompleted == 1) {
+                        if ((uiState.lat == DataSource.ClueLats[0 + uiState.clue]) &&
+                            (uiState.long == DataSource.ClueLongs[0 + uiState.clue])
+                        ) { // Check if current lat/long matches clue lat/long
+                            viewModel.updateClueSolved(it + 1)
+                            if (uiState.huntCompleted == 1) { // Check it hunt is completed
+                                navController.navigate(HuntScreen.CompletePage.name)
+                            }
+                            else {
+                                navController.navigate(HuntScreen.ClueSolved.name)
+                            }
+                        }
+                        else if (uiState.secondClue) {
+                            isTiming = false
                             navController.navigate(HuntScreen.CompletePage.name)
                         }
-                        else {
-                            navController.navigate(HuntScreen.ClueSolved.name)
+                        else { // Show pop up notifying user that they are at the wrong location
+                            showPopUp.value = true
+                            viewModel.updateSecondClue()
                         }
                     },
                     onQuitButtonClicked = {
                         viewModel.resetHunt()
+                        isTiming = false // Stop timing
+                        isReset = true // Reset timer to 0
                         navController.navigate(HuntScreen.Start.name)
                     },
                     modifier = Modifier
@@ -185,8 +244,10 @@ fun TreasureHuntApp(
             }
             composable(route = HuntScreen.CompletePage.name) {
                 CompletedScreen(
+                    clueRef = uiState.clue,
                     onButtonClicked = {
                         viewModel.resetHunt()
+                        isReset = true // Reset timer to 0
                         navController.navigate(HuntScreen.Start.name)
                     },
                     modifier = Modifier
@@ -195,5 +256,78 @@ fun TreasureHuntApp(
                 )
             }
         }
+        Timer(isTiming, isReset)
     }
+}
+
+
+@Composable
+fun ClueNotFound(showPopUp: MutableState<Boolean>, modifier: Modifier = Modifier) {
+    if (showPopUp.value) {
+        AlertDialog(
+            title = {
+                Text(text = stringResource(R.string.incorrect_location_alert_title))
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.incorrect_location_alert_body)
+                )
+            },
+            onDismissRequest = {
+                showPopUp.value = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showPopUp.value = false
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showPopUp.value = false
+                    }
+                ) {
+                    Text(stringResource(R.string.dismiss))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun Timer (
+    isTiming: Boolean,
+    isReset: Boolean,
+    modifier: Modifier = Modifier
+) {
+    var currentTime by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(isTiming) {
+        while(isTiming) {
+            delay(1000)
+            currentTime++
+        }
+    }
+    if (isReset) {
+        currentTime = 0L
+    }
+    Column(
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Text(stringResource(R.string.treasure_hunt_elapsed_time))
+        Text(currentTime.displayTime())
+    }
+}
+
+// Function to format the elapsed time into a more readable way
+fun Long.displayTime(): String {
+    val hours = this / 3600
+    val minutes = (this % 3600) / 60
+    val seconds = this % 60
+    return String.format("%02d:%02d:%02d", hours, minutes, seconds)
 }

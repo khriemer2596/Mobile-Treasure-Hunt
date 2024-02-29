@@ -6,5 +6,8 @@ data class HuntUiState(
     val huntCompleted: Int = 0,
     val start: Int = 0,
     val hint: Int = 0,
-    val name: String = ""
+    val name: String = "",
+    val lat: Double = 0.0,
+    val long: Double = 0.0,
+    val secondClue: Boolean = false,
 )

@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.mobiletreasurehunt.R
 
@@ -30,7 +30,7 @@ fun StartScreen(
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("This is where the rules will go")
+            Text(stringResource(R.string.rules))
         }
         Column(
             modifier = Modifier
@@ -55,6 +55,6 @@ fun StartButton(
         onClick = onClick,
         modifier = modifier.widthIn(min = 250.dp)
     ) {
-        Text("Start")
+        Text(stringResource(R.string.start))
     }
 }

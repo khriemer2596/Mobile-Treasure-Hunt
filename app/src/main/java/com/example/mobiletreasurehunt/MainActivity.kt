@@ -1,222 +1,120 @@
 package com.example.mobiletreasurehunt
 
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.viewModels
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.compose.MobileTreasureHuntTheme
+import com.example.mobiletreasurehunt.ui.HuntViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.OnSuccessListener
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
+
+    private val viewModel: HuntViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                // You can use the API that requires the permission.
-                setContent {
-                    MobileTreasureHuntTheme {
-                        TreasureHuntApp()
-                    }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        getCurrentLocation()
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                locationResult ?: return
+                for (location in locationResult.locations){
+                    // Update UI with location data
+                    val lat = location.latitude
+                    val long = location.longitude
+                    viewModel.updateLat(lat)
+                    viewModel.updateLong(long)
                 }
-            }
-            shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION) -> {
-            // In an educational UI, explain to the user why your app requires this
-            // permission for a specific feature to behave as expected. In this UI,
-            // include a "cancel" or "no thanks" button that allows the user to
-            // continue using your app without granting the permission.
-                setContent {
-                    MobileTreasureHuntTheme {
-                        AlertDialog(
-                            icon = {
-                                //Icon(icon, contentDescription = "Example Icon")
-                            },
-                            title = {
-                                Text("Dialogue Title")
-                            },
-                            text = {
-                                Text("Dialogue Text Body")
-                            },
-                            onDismissRequest = {
-
-                            },
-                            confirmButton = {
-                                TextButton(
-                                    onClick = {
-                                        requestPermissions(
-                                            arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION,
-                                                android.Manifest.permission.ACCESS_COARSE_LOCATION),
-                                            MY_PERMISSIONS_REQUEST_LOCATION)
-                                    }
-                                ) {
-                                    Text("Confirm")
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(
-                                    onClick = {
-
-                                    }
-                                ) {
-                                    Text("Dismiss")
-                                }
-                            }
-                        )
-                    }
-                }
-
-
-            }
-            else -> {
-                // Ask for both the ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION permissions.
-                requestPermissions(
-                    arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION,
-                        android.Manifest.permission.ACCESS_COARSE_LOCATION),
-                    MY_PERMISSIONS_REQUEST_LOCATION)
             }
         }
-
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            MY_PERMISSIONS_REQUEST_LOCATION -> {
-                // If the request is cancelled, the result arrays are empty.
-                if (grantResults.isNotEmpty()) {
-                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        // ACCESS_FINE_LOCATION is granted
-                        setContent {
-                            MobileTreasureHuntTheme {
-                                TreasureHuntApp()
+
+    private fun getCurrentLocation() {
+        // Check Location Permission
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            resultLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            setContent {
+                MobileTreasureHuntTheme {
+                    AlertDialog(
+                        icon = {
+                            //Icon(icon, contentDescription = "Example Icon")
+                        },
+                        title = {
+                            Text(getString(R.string.loc_not_granted))
+                        },
+                        text = {
+                            Text(getString(R.string.alert_body))
+                        },
+                        onDismissRequest = {
+                            finish()
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    finish()
+                                }
+                            ) {
+                                Text(getString(R.string.confirm))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    finish()
+                                }
+                            ) {
+                                Text(getString(R.string.dismiss))
                             }
                         }
-                    } else if (grantResults[1] ==
-                        PackageManager.PERMISSION_GRANTED) {
-                        // ACCESS_COARSE_LOCATION is granted
-
-                    }
-                    else if (grantResults[0] == -1 && grantResults[1] == -1) {
-                        setContent {
-                            MobileTreasureHuntTheme {
-                                AlertDialog(
-                                    icon = {
-                                        //Icon(icon, contentDescription = "Example Icon")
-                                    },
-                                    title = {
-                                        Text("Dialogue Title")
-                                    },
-                                    text = {
-                                        Text("Dialogue Text Body")
-                                    },
-                                    onDismissRequest = {
-
-                                    },
-                                    confirmButton = {
-                                        TextButton(
-                                            onClick = {
-                                                requestPermissions(
-                                                    arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION,
-                                                        android.Manifest.permission.ACCESS_COARSE_LOCATION),
-                                                    MY_PERMISSIONS_REQUEST_LOCATION)
-                                            }
-                                        ) {
-                                            Text("Confirm")
-                                        }
-                                    },
-                                    dismissButton = {
-                                        TextButton(
-                                            onClick = {
-                                                finish()
-                                            }
-                                        ) {
-                                            Text("Dismiss")
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    // Explain to the user that the feature is unavailable because
-                    // the feature requires a permission that the user has denied.
-                    // At the same time, respect the user's decision. Don't link to
-                    // system settings in an effort to convince the user to change
-                    // their decision.
+                    )
+                }
+            }
+            return
+        }
+        fusedLocationClient.lastLocation.addOnSuccessListener(
+            this, OnSuccessListener { location: Location? ->
+                if (location != null) {
+                    val lat = location.latitude
+                    val long = location.longitude
+                    viewModel.updateLat(lat)
+                    viewModel.updateLong(long)
                     setContent {
                         MobileTreasureHuntTheme {
-                            AlertDialog(
-                                icon = {
-                                    //Icon(icon, contentDescription = "Example Icon")
-                                },
-                                title = {
-                                    Text("Dialogue Title")
-                                },
-                                text = {
-                                    Text("Dialogue Text Body")
-                                },
-                                onDismissRequest = {
-
-                                },
-                                confirmButton = {
-                                    TextButton(
-                                        onClick = {
-                                            requestPermissions(
-                                                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION,
-                                                    android.Manifest.permission.ACCESS_COARSE_LOCATION),
-                                                MY_PERMISSIONS_REQUEST_LOCATION)
-                                        }
-                                    ) {
-                                        Text("Confirm")
-                                    }
-                                },
-                                dismissButton = {
-                                    TextButton(
-                                        onClick = {
-
-                                        }
-                                    ) {
-                                        Text("Dismiss")
-                                    }
-                                }
-                            )
+                            TreasureHuntApp()
                         }
                     }
-
                 }
-                return
             }
+        )
+    }
 
-            // Add other 'when' lines to check for other
-            // permissions this app might request.
-            else -> {
-                // Ignore all other requests.
-            }
+    // Push toast notification that location permission was denied
+    private val resultLauncher = registerForActivityResult<String, Boolean>(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        if (isGranted) {
+            getCurrentLocation()
+        } else {
+            Toast.makeText(this, getString(R.string.toast_alert), Toast.LENGTH_SHORT).show()
         }
     }
-
-    companion object {
-        private const val MY_PERMISSIONS_REQUEST_LOCATION = 99
-        private const val MY_PERMISSIONS_REQUEST_BACKGROUND_LOCATION = 66
-    }
-
 }
 
 
