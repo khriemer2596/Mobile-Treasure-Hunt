@@ -12,6 +12,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/* Assignment 6: Mobile Treasure Hunt
+Kevin Riemer / riemerk@oregonstate.edu
+CS 492 / Oregon State University
+3/8/2024
+*/
+
 class HuntViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(HuntUiState())
     val uiState: StateFlow<HuntUiState> = _uiState.asStateFlow()

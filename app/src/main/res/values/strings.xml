@@ -31,4 +31,5 @@
     <string name="clue_solved_title">Clue Solved</string>
     <string name="treasure_hunt_completed_title">Treasure Hunt Completed</string>
     <string name="treasure_hunt_elapsed_time">"Total Treasure Hunt Elapsed Time: "</string>
+    <string name="welcome">Welcome to Mobile Treasure Hunt</string>
 </resources>

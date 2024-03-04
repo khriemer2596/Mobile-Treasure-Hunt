@@ -1,9 +1,7 @@
 package com.example.mobiletreasurehunt
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.location.Location
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,14 +32,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.compose.MobileTreasureHuntTheme
 import com.example.mobiletreasurehunt.data.DataSource
 import com.example.mobiletreasurehunt.model.HuntUiState
 import com.example.mobiletreasurehunt.ui.ClueScreen
@@ -53,6 +49,12 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.OnSuccessListener
 import kotlinx.coroutines.delay
+
+/* Assignment 6: Mobile Treasure Hunt
+Kevin Riemer / riemerk@oregonstate.edu
+CS 492 / Oregon State University
+3/8/2024
+*/
 
 enum class HuntScreen(var title: String) {
     Start(title = R.string.treasure_hunt_start_page_title.toString()),

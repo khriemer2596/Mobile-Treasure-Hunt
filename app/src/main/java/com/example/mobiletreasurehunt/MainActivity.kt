@@ -21,6 +21,12 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.OnSuccessListener
 import dagger.hilt.android.AndroidEntryPoint
 
+/* Assignment 6: Mobile Treasure Hunt
+Kevin Riemer / riemerk@oregonstate.edu
+CS 492 / Oregon State University
+3/8/2024
+*/
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 

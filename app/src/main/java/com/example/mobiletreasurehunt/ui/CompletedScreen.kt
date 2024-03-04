@@ -1,5 +1,6 @@
 package com.example.mobiletreasurehunt.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.mobiletreasurehunt.R
 import com.example.mobiletreasurehunt.data.DataSource
+
+/* Assignment 6: Mobile Treasure Hunt
+Kevin Riemer / riemerk@oregonstate.edu
+CS 492 / Oregon State University
+3/8/2024
+*/
 
 @Composable
 fun CompletedScreen(
@@ -28,6 +36,16 @@ fun CompletedScreen(
         modifier = modifier,
         verticalArrangement = Arrangement.Top
     ) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = DataSource.solutionImages[1]),
+                contentDescription = null,
+            )
+        }
+        Spacer(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)))
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
