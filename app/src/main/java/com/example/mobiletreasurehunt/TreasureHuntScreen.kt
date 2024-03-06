@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -128,21 +129,6 @@ fun TreasureHuntApp(
     var isTiming by remember { mutableStateOf(false) } // State variable for timer
     var isReset by remember { mutableStateOf(false) } // State variable for resetting timer
 
-    if (uiState.clueSolved > 0) { // Update location
-        val fusedLocationClient : FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(
-            LocalContext.current)
-        fusedLocationClient.lastLocation.addOnSuccessListener(
-            MainActivity(), OnSuccessListener { location: Location? ->
-                if (location != null) {
-                    val lat = location.latitude
-                    val long = location.longitude
-                    viewModel.updateLat(lat)
-                    viewModel.updateLong(long)
-                }
-            }
-        )
-    }
-
     Scaffold(
         topBar = {
             TreasureHuntAppBar(
@@ -203,22 +189,18 @@ fun TreasureHuntApp(
                     onFoundItButtonClicked = {
                         if ((uiState.lat == DataSource.ClueLats[0 + uiState.clue]) &&
                             (uiState.long == DataSource.ClueLongs[0 + uiState.clue])
-                        ) { // Check if current lat/long matches clue lat/long
+                        ) { // Check if current location lat/long matches clue lat/long
                             viewModel.updateClueSolved(it + 1)
                             if (uiState.huntCompleted == 1) { // Check it hunt is completed
+                                isTiming = false
                                 navController.navigate(HuntScreen.CompletePage.name)
                             }
-                            else {
+                            else { // Otherwise go to Clue Solved Screen
                                 navController.navigate(HuntScreen.ClueSolved.name)
                             }
                         }
-                        else if (uiState.secondClue) {
-                            isTiming = false
-                            navController.navigate(HuntScreen.CompletePage.name)
-                        }
                         else { // Show pop up notifying user that they are at the wrong location
                             showPopUp.value = true
-                            viewModel.updateSecondClue()
                         }
                     },
                     onQuitButtonClicked = {

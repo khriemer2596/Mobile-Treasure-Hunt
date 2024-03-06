@@ -15,5 +15,4 @@ data class HuntUiState(
     val name: String = "",
     val lat: Double = 0.0,
     val long: Double = 0.0,
-    val secondClue: Boolean = false,
 )
