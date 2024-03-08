@@ -59,7 +59,9 @@ fun ClueSolvedScreen(
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
         ) {
             ContinueButton(
-                onClick = { onButtonClicked(clueRef + 1) }
+                onClick = {
+                    onButtonClicked(clueRef + 1)
+                }
             )
         }
     }
