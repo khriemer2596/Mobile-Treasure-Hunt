@@ -131,7 +131,7 @@ fun FoundItButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.widthIn(min = 250.dp)
+        modifier = modifier.widthIn(min = dimensionResource(id = R.dimen.large_divider))
     ) {
         Text(stringResource(R.string.found_it))
     }
@@ -144,7 +144,7 @@ fun QuitButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.widthIn(min = 250.dp)
+        modifier = modifier.widthIn(min = dimensionResource(id = R.dimen.large_divider))
     ) {
         Text(stringResource(R.string.quit))
     }
