@@ -186,7 +186,9 @@ fun TreasureHuntApp(
                 ClueNotFound(showPopUp = showPopUp)
                 ClueScreen(
                     clueRef = uiState.clue,
-                    onFoundItButtonClicked = {
+                    onFoundItButtonClicked = { // Update current location and then check
+                        viewModel.updateLat(uiState.lat)
+                        viewModel.updateLong(uiState.long)
                         if ((uiState.lat == DataSource.ClueLats[0 + uiState.clue]) &&
                             (uiState.long == DataSource.ClueLongs[0 + uiState.clue])
                         ) { // Check if current location lat/long matches clue lat/long
@@ -196,6 +198,7 @@ fun TreasureHuntApp(
                                 navController.navigate(HuntScreen.CompletePage.name)
                             }
                             else { // Otherwise go to Clue Solved Screen
+                                isTiming = false
                                 navController.navigate(HuntScreen.ClueSolved.name)
                             }
                         }
@@ -219,6 +222,7 @@ fun TreasureHuntApp(
                     clueRef = uiState.clue,
                     onButtonClicked = {
                         viewModel.updateClue(it)
+                        isTiming = true
                         navController.navigate(HuntScreen.Clue.name)
                     },
                     modifier = Modifier

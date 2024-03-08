@@ -18,7 +18,7 @@
     <string name="home">Home</string>
     <string name="congrats">Congratulations! You have solved the treasure hunt! Check out your time at the bottom of the screen!</string>
     <string name="start">Start</string>
-    <string name="rules">In this treasure hunt, you will be presented with two clues, each with optional hints if you are stuck. Your task is to go to the location corresponding to each clue, and then click the \"Found It!\" button on that clue\'s page. Once you have successfully found the locations for both clues, you will have solved the treasure hunt! Act fast, because you will be timed! When you\'re ready, click the \"Start\" button.</string>
+    <string name="rules">In this treasure hunt, you will be presented with two clues, each with optional hints if you are stuck. Your task is to go to the location corresponding to each clue, and then click the \"Found It!\" button on that clue\'s page. Once you have successfully found the locations for both clues, you will have solved the treasure hunt! Act fast, because you will be timed! The timer will pause when you solve a clue so that you have time to read about each landmark. When you\'re ready, click the \"Start\" button.</string>
     <string name="loc_not_granted">Locations Permissions Not Granted</string>
     <string name="alert_body">This app requires location data to operate properly. Please click Confirm or Dismiss to close the app. If you want to use this app, please update your location services permission in the settings for this app.</string>
     <string name="confirm">Confirm</string>
