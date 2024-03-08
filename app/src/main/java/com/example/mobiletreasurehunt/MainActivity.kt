@@ -50,7 +50,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         getCurrentLocation()
+    }
 
+
+    private fun getCurrentLocation() {
+        // Check Location Permission
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            resultLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            return
+        }
         setContent {
             var currentLocation by remember { mutableStateOf(LatLng(0.toDouble(), 0.toDouble())) }
 
@@ -68,26 +76,6 @@ class MainActivity : ComponentActivity() {
             startLocationUpdates()
             MobileTreasureHuntTheme {
                 TreasureHuntApp()
-            }
-        }
-    }
-
-
-    private fun getCurrentLocation() {
-        // Check Location Permission
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            resultLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-            return
-        }
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                locationResult ?: return
-                for (location in locationResult.locations){
-                    // Update UI with location data
-                    val currentLocation = LatLng(location.latitude, location.longitude)
-                    viewModel.updateLat(currentLocation.latitude)
-                    viewModel.updateLong(currentLocation.longitude)
-                }
             }
         }
     }
