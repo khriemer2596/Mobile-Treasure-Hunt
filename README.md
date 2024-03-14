@@ -1,7 +1,7 @@
 <h1>Mobile Treasure Hunt</h1>
 
 This is an Android mobile app that uses Location Services to send you on a treasure hunt
-to a find 2 Chicago landmarks. This project is intended to showcase some of my skills using
+to find 2 Chicago landmarks. This project is intended to showcase some of my skills using
 Kotlin for mobile software development.
 
 In this treasure hunt, your Android device will ask you to enable Location Services. Upon
